@@ -1,0 +1,645 @@
+:root {
+  --bg: #f6f5f2;
+  --surface: #fff;
+  --text: #1d1c1a;
+  --muted: #6b6862;
+  --border: #dedbd4;
+  --accent: #8a3b12;
+  --accent-bg: #f3e6dc;
+  --warn: #8a5a00;
+  --warn-bg: #fbf1d8;
+  --error: #b3261e;
+  --error-bg: #fbe4e2;
+  --paper: #fff;
+  --desk: #e9e7e2;
+  --fold: #6b6862;
+
+  --ui: system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  font: 14px/1.4 var(--ui);
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17161a;
+    --surface: #1f1e23;
+    --text: #ecebe8;
+    --muted: #9c9993;
+    --border: #34323a;
+    --accent: #e6a47a;
+    --accent-bg: #3a2a20;
+    --warn: #f0c46a;
+    --warn-bg: #3a3020;
+    --error: #f2b8b5;
+    --error-bg: #3c2322;
+    --paper: #26252b;
+    --desk: #121115;
+    --fold: #9c9993;
+  }
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); }
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+}
+
+/* ── верхня панель ── */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-wrap: wrap;
+}
+
+.brand { letter-spacing: 0.08em; margin-right: 8px; }
+.file { color: var(--muted); }
+.notice { color: var(--error); }
+.info { color: var(--warn); }
+.spacer { flex: 1; }
+
+.button, button, select, input, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.button, .toolbar button, .structure button, select {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.button.primary, button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--surface);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:disabled { opacity: 0.4; cursor: default; }
+
+/* ── робоча область: структура | вміст | експорт ── */
+
+.workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr auto;
+  min-height: 0;
+}
+
+.structure {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* Список — по вмісту (довгий прокручується); «Додати» — одразу під ним. */
+.structure ul { list-style: none; margin: 0; padding: 8px; overflow: auto; flex: 0 1 auto; }
+
+.structure .row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.structure .row:hover { background: var(--bg); }
+.structure .row.selected { background: var(--accent-bg); }
+.structure .row.dragged { opacity: 0.4; }
+/* Куди стане перетягуваний блок — риска між рядками. */
+/* Глава, до якої прив'язана вибрана ілюстрація. */
+.structure .row.linked { background: color-mix(in srgb, var(--accent-bg) 45%, transparent); }
+.structure .row.drop-before { box-shadow: inset 0 2px 0 var(--accent); }
+.structure .row.drop-after { box-shadow: inset 0 -2px 0 var(--accent); }
+.structure .type { font-size: 12px; color: var(--muted); min-width: 64px; }
+.structure .title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.structure .muted { color: var(--muted); }
+/* Сторінка й дії — в одній клітинці праворуч: при наведенні дії перекривають номер сторінки. */
+.structure .pages, .structure .actions { grid-column: 3; grid-row: 1; justify-self: end; }
+.structure .pages { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.structure .actions { display: flex; gap: 2px; visibility: hidden; }
+.structure .row:hover .actions, .structure .row:focus-within .actions { visibility: visible; }
+.structure .row:hover .pages, .structure .row:focus-within .pages { visibility: hidden; }
+.structure .actions button { padding: 0 6px; border: 0; background: transparent; }
+.structure .actions button:hover:not(:disabled) { background: var(--border); }
+
+/* «Додати після вибраного» — окрема тонована панелька, кнопки з акцентним «+». */
+.structure .add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px;
+  padding: 10px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent-bg);
+}
+.structure .colophon { margin-top: 2px; }
+.structure .add-label { width: 100%; color: var(--accent); font-size: 12px; font-weight: 600; }
+.structure .add button { font-size: 12px; padding: 2px 8px; border-color: var(--accent); color: var(--accent); }
+.structure .add button:hover:not(:disabled) { background: var(--accent); color: var(--surface); }
+.structure .add button:disabled { border-color: var(--border); color: var(--muted); }
+
+.content { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+
+.import-banner {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--accent-bg);
+  border-bottom: 1px solid var(--border);
+}
+.import-banner .icon { margin-left: auto; border: 0; background: transparent; cursor: pointer; }
+
+/* Панель стоїть на місці, прокручується лише текст під нею. */
+.toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.toolbar button[aria-pressed='true'] { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+.toolbar .mark { min-width: 32px; padding-inline: 6px; font-family: var(--book); }
+.toolbar .bold { font-weight: 700; }
+.toolbar .italic { font-style: italic; }
+.toolbar .strike { text-decoration: line-through; }
+.toolbar .icon { display: inline-grid; place-items: center; min-width: 32px; padding-inline: 6px; }
+.toolbar .icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.toolbar .sep { width: 1px; height: 20px; margin: 0 6px; background: var(--border); }
+
+
+.emoji-panel {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 20px;
+  max-height: 30svh;
+  overflow: auto;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.emoji-panel section { display: flex; flex-direction: column; gap: 2px; }
+.emoji-row { display: flex; flex-wrap: wrap; gap: 2px; }
+/* Швидкі емодзі поруч із кнопкою панелі — без рамки, як на папері. */
+.toolbar .quick-emoji { min-width: 30px; padding: 2px 4px; border-color: transparent; background: transparent; font-size: 18px; line-height: 1; }
+.toolbar .quick-emoji:hover { border-color: var(--border); background: var(--surface); }
+.emoji-panel .emoji, .toolbar .emoji-toggle, .toolbar .quick-emoji {
+  font-family: 'FancraftEmoji', var(--book);
+}
+.emoji-panel .emoji {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.emoji-panel .emoji:hover { border-color: var(--border); background: var(--bg); }
+
+/* ── полотно книжки: усі сторінки по порядку, розворотами ── */
+
+.book-view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.book-view > .toolbar { background: var(--bg); }
+.book-scroll { flex: 1; min-height: 0; overflow: auto; padding: 32px 16px 40svh; background: var(--desk); }
+
+/* flow-root — щоб поле колонок не «випадало» з аркуша догори. */
+.sheet { position: relative; display: flow-root; width: calc(var(--cols) * (var(--w) + 2 * var(--m))); margin: 0 auto; }
+/* z-index: 0 — свій шар: вибрана сторінка піднімається над сусідніми (її рамку видно з усіх боків), а текст полотна лишається над сторінками. */
+.frames { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.frame {
+  position: absolute;
+  box-sizing: border-box;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+/* Згин — червоний пунктир, сегмент 2 см, проміжок такий самий: у правої сторінки ліворуч, у лівої
+   праворуч. Товщина — 1.5px (border був 3px, тепер удвічі тонший). Градієнт замість border: у border
+   немає довжини штриха. */
+.frame.recto, .frame.verso {
+  --fold-seg: calc(var(--mm) * 20);
+  --fold-period: calc(var(--fold-seg) * 2);
+  /* Один період (штрих + проміжок) як фонове зображення, що повторюється по вертикалі; позиція —
+     center, щоб зверху й знизу лишався однаковий відступ. */
+  --fold-dash: linear-gradient(to bottom, var(--fold-color) 0, var(--fold-color) 50%, transparent 50%, transparent 100%);
+  --fold-color: #c0392b;
+}
+.frame.recto { background: var(--fold-dash) left center / 1.5px var(--fold-period) repeat-y, var(--paper); }
+.frame.verso { background: var(--fold-dash) right center / 1.5px var(--fold-period) repeat-y, var(--paper); }
+.frame.selected { z-index: 1; box-shadow: 0 0 0 2px var(--accent); }
+.frame .folio { position: absolute; bottom: calc(var(--m) * 0.35); font: 11px var(--ui); color: var(--muted); }
+.frame.recto .folio { right: var(--m); }
+.frame.verso .folio { left: var(--m); }
+
+/* Один потік колонок на всю книжку: колонка — смуга набору сторінки, ряд — розворот. */
+.book-flow {
+  position: relative;
+  box-sizing: content-box;
+  width: var(--inner);
+  margin: var(--m);
+  font-family: var(--book);
+  font-size: var(--s);
+  line-height: var(--lh);
+  /* Поправка ширини знака під масштаб екрана (app/tracking.ts): рядок рівно такої ширини, як у PDF. */
+  letter-spacing: var(--track, 0);
+  column-count: var(--cols);
+  column-gap: calc(2 * var(--m));
+  /* Колонка = сторінка. Висота — висота сторінки PDF плюс приріст (BookSheet): якщо текст сторінки на
+     цьому екрані не влазить (шрифт, масштаб, ОС), сторінки стають вищими, а не переносять рядок далі.
+     Розриває колонки лише рушій (примусові розриви) — сам браузер ніколи. */
+  column-height: var(--col-h);
+  column-wrap: wrap;
+  column-fill: auto;
+  row-gap: var(--row-gap);
+  orphans: 1;
+  widows: 1;
+}
+.flow-page { position: relative; height: var(--h); break-inside: avoid; }
+/* Кожна сторінка-макет і кожна глава — з верху нової сторінки (колонки): скільки б рядків не зайняла
+   попередня глава, на відступ наступної це не впливає. */
+.book-flow > * + * { break-before: column; }
+.flow-placeholder-page { height: var(--h); break-inside: avoid; }
+.flow-placeholder-page + .flow-placeholder-page { break-before: column; }
+.flow-placeholder-page { background: repeating-linear-gradient(0deg, transparent 0 calc(var(--lh) - 1px), color-mix(in srgb, var(--border) 50%, transparent) calc(var(--lh) - 1px) var(--lh)); }
+
+/* Глава: текст тече колонками-сторінками. */
+.book-flow .tiptap {
+  margin: 0;
+  padding: 0;
+  outline: none;
+  /* ProseMirror ставить break-spaces: пробіл у кінці рядка займає місце, і рядок коротшає на знак.
+     pre-wrap — пробіл «висить» за краєм, як у рушії верстки. */
+  white-space: pre-wrap;
+}
+.book-flow .tiptap p { margin: 0; text-indent: var(--indent); text-align: justify; }
+.book-flow .tiptap p:first-of-type { text-indent: 0; }
+/* Проміжок між абзацами — як у рушії; нагорі сторінки браузер його зрізає, як і рушій. */
+.book-flow .tiptap p + p { margin-top: calc(var(--lh) * var(--para-space)); }
+/* Сторінка, що починається з нового абзацу чи підзаголовка, — з нової колонки, без пропуску нагорі. */
+.book-flow .tiptap .page-start { break-before: column; margin-top: 0; }
+/* Порожній абзац у книжку не йде (рушій його пропускає) — і в редакторі місця не займає; курсор у ньому видно. */
+.book-flow .tiptap p:not(:only-of-type):has(> br.ProseMirror-trailingBreak:only-child) { height: 0; margin: 0; }
+/* Порожня глава (єдиний порожній абзац): рядок лишається, у ньому підказка «Текст глави»; уся сторінка
+   клікабельна — клік будь-де ставить курсор у текст. У PDF порожній абзац не друкується. */
+.book-flow .tiptap:has(> p:only-of-type > br.ProseMirror-trailingBreak:only-child) { min-height: calc(var(--col-h) - 2px); cursor: text; }
+.book-flow .tiptap p:only-of-type:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: var(--text-placeholder);
+  float: left;
+  height: 0;
+  color: var(--muted);
+  font-style: italic;
+  pointer-events: none;
+}
+/* Знака немає в шрифті книжки: рівно одна клітинка, як його міряє рушій (у PDF — квадратик), і підсвічений. */
+/* Висота — рівно рядок, по верху: блок з overflow: hidden інакше ставить базову лінію на свій низ і робить рядок вищим. */
+.book-flow .glyph-missing { display: inline-block; width: 1ch; height: var(--lh); line-height: var(--lh); overflow: hidden; vertical-align: top; white-space: nowrap; background: var(--warn-bg); color: var(--warn); outline: 1px solid var(--warn); outline-offset: -1px; }
+.book-flow .glyph-word { white-space: nowrap; }
+
+/* Сторінка PDF починається посеред абзацу — примусовий розрив колонки саме тут. */
+.book-flow .page-break { display: block; height: 0; break-before: column; }
+/* Сторінка посеред глави зайнята іншим блоком (ілюстрація при обтіканні): порожня колонка — ілюстрацію
+   полотно малює поверх неї (.hole-page). 1px — щоб колонка точно була. */
+.book-flow .page-hole { display: block; height: 1px; break-before: column; }
+.hole-page { position: absolute; z-index: 1; }
+/* «Видалити …» — у верхньому правому куті першої сторінки вибраного блоку. */
+/* Хрестик у верхньому лівому куті сторінки; підпис «Видалити …» — поруч, лише при наведенні. */
+.page-remove {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.page-remove-x { font: 700 18px/1 var(--ui); color: var(--accent); }
+.page-remove:hover .page-remove-x { color: var(--error); }
+.page-remove-label {
+  display: none;
+  padding: 2px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font: 12px var(--ui);
+  white-space: nowrap;
+}
+.page-remove:hover .page-remove-label, .page-remove:focus-visible .page-remove-label { display: inline-block; }
+.pv-rule { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid #aaa; pointer-events: none; }
+
+/* Зона назви глави: назва вводиться просто на сторінці, під нею — зображення. */
+.book-flow .page-title { position: relative; height: calc(var(--lh) * var(--lead)); break-inside: avoid; }
+.page-title-input {
+  letter-spacing: var(--title-track, 0);
+  position: absolute;
+  top: var(--title-before);
+  left: 0;
+  width: 100%;
+  height: calc(var(--lh) * var(--title-rows));
+  margin: 0;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  font: 700 var(--title-size)/var(--title-lh) var(--book);
+  text-align: center;
+  outline: none;
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+.page-title-input:focus { background: color-mix(in srgb, var(--accent-bg) 60%, transparent); box-shadow: inset 0 -2px 0 var(--accent); }
+.page-title-input::placeholder { color: var(--muted); font-style: italic; }
+/* Іконка ілюстрації ліворуч від назви глави: нова сторінка-ілюстрація на розвороті з главою. */
+.page-title-plate {
+  position: absolute;
+  left: 0;
+  top: var(--title-before);
+  height: calc(var(--lh) * var(--title-rows));
+  width: calc(var(--lh) * 1.6);
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  opacity: 0.55;
+  cursor: pointer;
+}
+.page-title-plate svg { width: 100%; height: 100%; }
+.page-title-plate:hover { opacity: 1; color: var(--accent); }
+.page-title-image { position: absolute; cursor: pointer; outline: 1.5px dashed var(--fold); outline-offset: -1px; }
+.page-title-image img { width: 100%; height: 100%; display: block; }
+
+/* Налаштування сторінки-макета — у верхньому полі над смугою. */
+.page-controls {
+  /* Від'ємний зсув у колонках переносить блок у попередню колонку; transform розбиттю не заважає. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(calc(-100% - var(--m) * 0.25));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font: 11px var(--ui);
+  color: var(--muted);
+  z-index: 4;
+}
+.page-controls select, .page-controls input { padding: 1px 4px; font: 11px var(--ui); border: 1px solid var(--border); border-radius: 4px; background: var(--surface); }
+.page-controls input.narrow { width: 48px; }
+.page-warning { color: var(--warn); }
+.page-controls .button { padding: 1px 8px; font: 11px var(--ui); }
+.page-controls .limit { font: 11px var(--ui); color: var(--muted); }
+.page-controls .limit.full { color: var(--warn); }
+/* QR: без посилання — пунктирна рамка, з посиланням — сам код; посилання — стрічка в рядку над ним. */
+.pv-qr { position: absolute; color: var(--text); }
+.pv-qr.editable { cursor: pointer; }
+.pv-qr.editable:hover { outline: 1.5px dashed var(--accent); outline-offset: 2px; }
+.pv-qr svg { display: block; width: 100%; height: 100%; }
+.pv-link { font: 11px var(--ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+
+/* ── форми блоків ── */
+
+.form { padding: 24px; max-width: 560px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+
+.field { display: flex; flex-direction: column; gap: 4px; border: 0; margin: 0; padding: 0; }
+.field-label { font-size: 12px; color: var(--muted); }
+.field input, .field textarea, .field select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.hint { font-size: 12px; color: var(--muted); }
+.warning { margin: 0; padding: 8px 10px; border-radius: 6px; background: var(--warn-bg); color: var(--warn); }
+.error { margin: 0; padding: 8px 10px; border-radius: 6px; background: var(--error-bg); color: var(--error); }
+.radio, .check { display: flex; gap: 6px; align-items: baseline; }
+
+.logo-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ── сторінка-макет (титул, колофон, частина, ілюстрація) ── */
+
+.pv-block { position: relative; font-family: var(--book); color: var(--text); }
+.pv-line { position: absolute; white-space: pre; overflow: visible; }
+/* Місце зображення чи QR: без рамки, поки порожнє — велика сіра іконка завантаження (зображення)
+   або підпис «QR»; саме зображення — всередині, як стоятиме в книжці. */
+.pv-slot {
+  position: absolute;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  font: 11px var(--ui);
+  color: var(--muted);
+  text-align: center;
+  overflow: hidden;
+}
+.pv-upload-icon { width: 22%; max-width: 48px; height: auto; color: var(--muted); opacity: 0.6; }
+.pv-slot.editable:hover .pv-upload-icon { opacity: 0.9; color: var(--accent); }
+.pv-slot img { width: 100%; height: 100%; object-fit: fill; display: block; }
+.pv-slot.editable { cursor: pointer; }
+.pv-slot.editable:hover { background: color-mix(in srgb, var(--accent-bg) 50%, transparent); }
+.pv-slot-actions { position: absolute; top: 6px; right: 6px; display: none; gap: 4px; }
+.pv-slot:hover .pv-slot-actions { display: flex; }
+.pv-slot-actions button { padding: 2px 8px; font: 12px var(--ui); border: 1px solid var(--border); border-radius: 6px; background: var(--surface); cursor: pointer; }
+
+/* Текст просто на сторінці: «стрічка з підписом» на місці рядка. Порожня — підпис пунктиром. */
+.pv-field {
+  position: absolute;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: inherit;
+  font-family: var(--book);
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  outline: none;
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+.pv-field:hover { box-shadow: inset 0 -1px 0 var(--fold); }
+.pv-field:focus { background: color-mix(in srgb, var(--accent-bg) 60%, transparent); box-shadow: inset 0 -2px 0 var(--accent); }
+.pv-field.empty { box-shadow: none; border-bottom: 1.5px dashed var(--fold); }
+.pv-field.empty:focus { box-shadow: none; border-bottom-color: var(--accent); }
+.pv-field::placeholder { color: var(--muted); font-style: italic; opacity: 0.9; }
+
+/* ── експорт ── */
+
+.export-panel {
+  width: 320px;
+  padding: 16px;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.export-panel header { display: flex; align-items: center; justify-content: space-between; }
+.export-panel h2 { margin: 0; font-size: 16px; }
+.export-panel .icon { border: 0; background: transparent; cursor: pointer; }
+.results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.results li { display: flex; gap: 10px; align-items: baseline; }
+.results li span { flex: 1; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+.results a { color: var(--accent); }
+
+/* ── панель книжки: налаштування, статистика, попередження ── */
+
+.book-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 24px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.book-bar .settings { display: flex; flex-wrap: wrap; gap: 8px 12px; }
+.book-bar label { display: flex; flex-direction: column; gap: 2px; }
+.stats {
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: var(--bg);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.stats.busy { opacity: 0.6; }
+.stats.warn { background: var(--warn-bg); color: var(--warn); }
+.stats.over { background: var(--error-bg); color: var(--error); }
+.warnings { width: 100%; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--warn); }
+.warnings li::before { content: '⚠ '; }
+
+/* ── вільні сторінки в кінці структури ── */
+
+/* Технічні рядки (вільні сторінки, порожні від верстки) — не блоки: не вибираються. */
+.structure .free { margin-top: 6px; border-top: 1px dashed var(--border); border-radius: 0; }
+.structure .fill button { font-size: 12px; padding: 2px 8px; }
+
+@media (max-width: 720px) {
+  .workspace { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  .structure { border-right: 0; border-bottom: 1px solid var(--border); max-height: 35svh; }
+  .export-panel { width: auto; border-left: 0; border-top: 1px solid var(--border); }
+}
+
+/* ── сторож: перевірка збігу екрана з PDF, завжди на місці внизу ── */
+
+.drift-guard-button {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 20;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+.drift-guard-button:hover { background: var(--bg); }
+.drift-guard-button.has-drift { color: var(--warn); border-color: var(--warn); background: var(--warn-bg); }
+.drift-guard-button .drift-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--error);
+  color: var(--surface);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+}
+.drift-panel {
+  position: fixed;
+  right: 16px;
+  bottom: 60px;
+  z-index: 20;
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  max-height: 60svh;
+  padding: 12px 16px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+}
+.drift-panel header { display: flex; align-items: center; justify-content: space-between; }
+.drift-panel h2 { margin: 0; font-size: 15px; }
+.drift-panel .icon { border: 0; background: transparent; cursor: pointer; }
+.drift-empty { margin: 0; color: var(--muted); font-size: 13px; }
+.drift-hint { margin: 0; color: var(--muted); font-size: 12px; }
+.drift-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.drift-list li { padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.drift-item-title { font-size: 13px; color: var(--warn); }
+.drift-debug {
+  display: block;
+  margin-top: 4px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: var(--bg);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ── перша вільна сторінка: кнопки «Додати» просто на сторінці ── */
+.free-add {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  font: 14px/1.4 var(--ui);
+  letter-spacing: normal;
+}
+.free-add-hint { margin: 0; color: var(--muted); }
+.free-add-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 80%; }
